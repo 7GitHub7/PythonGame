@@ -1,3 +1,5 @@
+import json
+import threading
 import socket
 
 HEADER = 64
@@ -8,22 +10,36 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)
+# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# client.connect(ADDR)
 
-def send(msg):
-    message = msg.encode(FORMAT)
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
-    print(client.recv(2048).decode(FORMAT))
+class Client:
 
-send("Hello World!")
-input()
-send("Hello Everyone!")
-input()
-send("Hello Tim!")
+    def __init__(self, playerName: str):
+        self.playerName = playerName
+        self.playerID = None
+        self.roomID = None
+        self.register()
 
-send(DISCONNECT_MESSAGE)
+    def register(self):
+        self.playerID = self.sendAndReceive({"action": "register", "name": self.playerName})
+        print(self.playerID)
+
+    def sendAndReceive(self, message):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect(ADDR)
+        msgSend = json.dumps(message)
+        client.send(msgSend.encode())
+        msgRecv = json.loads(client.recv(2048))
+        client.close()
+        return msgRecv
+
+    def createRoom(self, roomName: str):
+        self.roomID = self.sendAndReceive({"action": "createRoom", "name": roomName, "playerID": self.playerID})
+        print(self.roomID)
+
+
+if __name__ == "__main__":
+
+    player = Client("PlayerXD")
+    player.createRoom("ddddsfsdf")

@@ -1,5 +1,8 @@
+import json
 import socket
 import threading
+from player import Player
+from room import Room
 
 HEADER = 64
 PORT = 5050
@@ -9,37 +12,55 @@ ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(ADDR)
 
 
-def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
+class Server():
 
-    connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
+    playersMap = {}
+    roomsMap = {}
 
-            print(f"[{addr}] {msg}")
-            conn.send("Msg received".encode(FORMAT))
+    def __init__(self):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(ADDR)
 
-    conn.close()
+    def handle_client(self, conn, addr):
+        print(f"[NEW CONNECTION] {addr} connected.")
+        data = conn.recv(1024)
+        data = json.loads(data)
+        self.route(conn, addr, data)
+        conn.close()
+
+    def route(self,conn, addr, data):
+        action = data['action']
+
+        if action == 'register':
+            player = Player(data["name"], addr)
+            print(f"[NEW PLAYER] {player}")
+            self.playersMap[player.playerID] = player
+            self.send(conn, player.playerID)
+
+        elif action == "createRoom":
+            room = Room(data["name"])
+            self.roomsMap[room.roomID] = room
+            room.addPlayer(self.playersMap[data["playerID"]])
+            print(f"[NEW ROOM] {room}")
+            self.send(conn, room.roomID)
+
+    def send(self, conn, data):
+        message = json.dumps(data)
+        conn.send(message.encode())
+
+    def start(self):
+        self.server.listen()
+        print(f"[LISTENING] Server is listening on {SERVER}:{PORT}")
+        while True:
+            conn, addr = self.server.accept()
+            thread = threading.Thread(target=self.handle_client, args=(conn, addr))
+            thread.start()
+            print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
 
 
-def start():
-    server.listen()
-    print(f"[LISTENING] Server is listening on {SERVER}")
-    while True:
-        conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
-
-
-print("[STARTING] server is starting...")
-start()
+if __name__ == "__main__":
+    server = Server()
+    print("[STARTING] server is starting...")
+    server.start()
