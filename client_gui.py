@@ -145,6 +145,7 @@ class Main(QWidget):
             self.mouse_clik_counter += 1
             self.player = Client(self.player_name_input.text())
             self.rooms = self.player.getRoomList()
+            self.list.clear()
             for room in self.rooms:
                 self.list.addItem(str(room))
             self.update()
@@ -211,6 +212,7 @@ class Main(QWidget):
         if self.room_name_label.text():
             self.player.createRoom(self.room_name_label.text())
             self.rooms = self.player.getRoomList()
+            self.list.clear()
             for room in self.rooms:
                 self.list.addItem(str(room))
         self.update()    
