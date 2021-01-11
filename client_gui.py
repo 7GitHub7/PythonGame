@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QApplication,QLabel
+from PyQt5.QtWidgets import QFrame,QWidget, QApplication,QLabel ,QTabWidget,QVBoxLayout,QCheckBox,QHBoxLayout,QPushButton,QLineEdit,QListWidget,QLabel
+# from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QBrush
 import sys
 import numpy as np
@@ -10,8 +11,7 @@ SQUARESIZE = 100
 board = np.zeros((ROW_COUNT,COLUMN_COUNT))
 board[0][6] = 2
 
-
-class Example(QWidget):
+class Game(QWidget):
     X_Circle = 0
     Y_Circle = 0
 
@@ -20,7 +20,7 @@ class Example(QWidget):
         self.X_Circle = 0
         self.Y_Circle = 0
 
-        self.initUI()    
+        self.initUI()  
 
     def initUI(self):
         self.setGeometry(300, 300, 900, 900)
@@ -87,8 +87,67 @@ class Example(QWidget):
         qp.setBrush(QColor(200, 0, 0))        
         qp.drawEllipse(self.X_Circle-15, int(SQUARESIZE/10), SQUARESIZE-5, SQUARESIZE-5)
 
+class QHLine(QFrame):
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
+
+class Main(QWidget):
+
+
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(300, 300, 750, 800)
+        self.setWindowTitle("Game")
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        tabs = QTabWidget()
+        tabs.addTab(self.networkTabUI(), "Network")
+        tabs.addTab(self.gameTabUI(), "Game")
+        layout.addWidget(tabs)
+    
+    def gameTabUI(self):
+        """Create the Game page UI."""
+        generalTab = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(Game())
+        generalTab.setLayout(layout)
+        return generalTab
+
+    def networkTabUI(self):
+        
+        """init boxes"""
+        self.networkTab = QWidget()
+        self.layout_main = QVBoxLayout()
+        self.layout_create_room = QHBoxLayout()
+
+
+        """Create room layout"""
+        self.room_name_input = QLineEdit(self)
+        self.room_name_label = QLabel("Nazwa", self)
+        self.layout_create_room.addWidget(self.room_name_label)
+        self.layout_create_room.addWidget(self.room_name_input)
+
+        """Main layout"""
+        self.list = QListWidget()
+        self.btn_add_room = QPushButton('Dodaj pokój')
+        self.btn_connect = QPushButton('Dołącz')   
+        self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
+        self.layout_main.addLayout(self.layout_create_room)
+        self.layout_main.addWidget(self.btn_add_room)
+        self.layout_main.addWidget(QHLine())
+        self.layout_main.addWidget(self.list)
+        self.layout_main.addWidget(self.btn_connect)
+        self.networkTab.setLayout(self.layout_main)
+
+        return self.networkTab      
+
+
 if __name__ == '__main__':
      app = QApplication(sys.argv)
-     ex = Example()
+     ex = Main()
+     ex.show()
      sys.exit(app.exec_())
      board = np.zeros((ROW_COUNT,COLUMN_COUNT))    
