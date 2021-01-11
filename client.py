@@ -53,10 +53,10 @@ class Client:
             self.roomID = roomID
         print(f'{self.roomID}: {result}')
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    player = Client("PlayerXD")
-    player.createRoom("ddddsfsdf")
-    room = player.getRoomList()
-    player.joinToRoom(room[0][1])
-    player.disconnect()
+    # player = Client("PlayerXD")
+    # player.createRoom("ddddsfsdf")
+    # room = player.getRoomList()
+    # player.joinToRoom(room[0][1])
+    # player.disconnect()
