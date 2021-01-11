@@ -10,9 +10,6 @@ PORT = 5050
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-
-
 
 class Server():
 
@@ -25,15 +22,23 @@ class Server():
 
     def handle_client(self, conn, addr):
         print(f"[NEW CONNECTION] {addr} connected.")
-        data = conn.recv(1024)
-        data = json.loads(data)
-        self.route(conn, addr, data)
-        conn.close()
+        connected = True
+        while connected:
+            data = conn.recv(1024)
+            data = json.loads(data)
+            if not self.route(conn, addr, data):
+                connected = False
+                print(f"[DISCONNECT] {addr}")
 
     def route(self,conn, addr, data):
         action = data['action']
 
-        if action == 'register':
+        if action == 'disconnect':
+            self.send(conn,True)
+            conn.close()
+            return False
+
+        elif action == 'register':
             player = Player(data["name"], addr)
             print(f"[NEW PLAYER] {player}")
             self.playersMap[player.playerID] = player
@@ -45,6 +50,19 @@ class Server():
             room.addPlayer(self.playersMap[data["playerID"]])
             print(f"[NEW ROOM] {room}")
             self.send(conn, room.roomID)
+
+        elif action == "joinToRoom":
+            room = self.roomsMap[data['roomID']]
+            result = room.addPlayer(self.playersMap[data["playerID"]])
+            self.send(conn, result)
+
+        elif action == "getRoomList":
+            listRoom = []
+            for room in self.roomsMap.values():
+                listRoom.append([room.roomName, room.roomID])
+            self.send(conn, listRoom)
+
+        return True
 
     def send(self, conn, data):
         message = json.dumps(data)
