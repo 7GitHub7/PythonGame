@@ -29,11 +29,17 @@ class Server():
             if not self.route(conn, addr, data):
                 connected = False
                 print(f"[DISCONNECT] {addr}")
+                print(f"Players: {self.playersMap}")
+                print(f"Rooms: {self.roomsMap}")
 
     def route(self,conn, addr, data):
         action = data['action']
 
         if action == 'disconnect':
+            player = self.playersMap[data["playerID"]]
+            if player.roomID:
+                del self.roomsMap[player.roomID]
+            del self.playersMap[data["playerID"]]
             self.send(conn,True)
             conn.close()
             return False
@@ -53,7 +59,10 @@ class Server():
 
         elif action == "joinToRoom":
             room = self.roomsMap[data['roomID']]
-            result = room.addPlayer(self.playersMap[data["playerID"]])
+            player = self.playersMap[data["playerID"]]
+            result = room.addPlayer(player)
+            if result:
+                player.roomID = room.roomID
             self.send(conn, result)
 
         elif action == "getRoomList":

@@ -33,7 +33,7 @@ class Client:
         return msgRecv
 
     def disconnect(self):
-        disconnect = self.sendAndReceive({"action": "disconnect"})
+        disconnect = self.sendAndReceive({"action": "disconnect", "playerID": self.playerID})
         if disconnect:
             client.close()
             print("DISCONNECT")
