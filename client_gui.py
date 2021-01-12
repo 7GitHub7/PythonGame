@@ -1,6 +1,9 @@
-from PyQt5.QtWidgets import QStackedWidget,QFrame,QWidget, QApplication,QLabel ,QTabWidget,QVBoxLayout,QCheckBox,QHBoxLayout,QPushButton,QLineEdit,QListWidget,QLabel
+from PyQt5.QtWidgets import (QStackedWidget,QFrame,QWidget, QApplication,QLabel ,QTabWidget,
+                            QVBoxLayout,QCheckBox,QHBoxLayout,QPushButton,QLineEdit,QListWidget,QLabel,QGridLayout,QFormLayout)
 # from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QBrush
+from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap, QPalette
+from PyQt5.QtCore import QRect, Qt
+
 import sys
 import numpy as np
 from client import *
@@ -156,21 +159,28 @@ class Main(QWidget):
 
     def welcomeTabUI(self):
         """Create the Welcome page UI."""
-        self.layout_welcome = QVBoxLayout()
+        self.grid = QFormLayout() 
+        self.grid.setFormAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter) 
+
         self.player_name_input = QLineEdit(self)
+ 
+
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
         self.title_label = QLabel("Witaj w Connect4", self)
-        self.layout_welcome.addWidget(self.title_label)
-        self.layout_welcome.addWidget(self.player_name_label)
-        self.layout_welcome.addWidget(self.player_name_input)
-        
-        generalTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addLayout(self.layout_welcome)
-        
-        generalTab.setLayout(layout)
-        return generalTab
+        self.title_label.setStyleSheet("font: 30pt Century Gothic")
+        self.player_name_label.setStyleSheet("font: 15pt Century Gothic")
+        self.title_label.setAlignment(Qt.AlignLeading|Qt.AlignCenter|Qt.AlignCenter)
+        self.player_name_label.setAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter)
+        self.player_name_input.setAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter)
+        self.grid.addWidget(self.title_label)
+        self.grid.addWidget(self.player_name_label)
+        self.grid.addWidget(self.player_name_input)
 
+        generalTab = QWidget()
+        generalTab.setLayout(self.grid)
+      
+        return generalTab
+        
 
     def gameTabUI(self):
         """Create the Game page UI."""
@@ -219,6 +229,9 @@ class Main(QWidget):
 
 if __name__ == '__main__':
      app = QApplication(sys.argv)
+     palette = QPalette()
+     palette.setBrush(QPalette.Background, QBrush(QPixmap("image.png")))
+     app.setPalette(palette)
      ex = Main()
      ex.show()
      ex.insert_page(ex.welcomeTabUI())
