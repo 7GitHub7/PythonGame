@@ -2,10 +2,11 @@ import uuid
 
 class Player:
 
-    def __init__(self, playerName: str, addr):
+    def __init__(self, playerName: str, addr, conn):
         self.__playerName = playerName
         self.__playerID = str(uuid.uuid4())
         self.__addr = addr
+        self.__conn = conn
         self.__roomID = None
 
     @property
@@ -19,6 +20,10 @@ class Player:
     @property
     def addr(self):
         return self.__addr
+
+    @property
+    def conn(self):
+        return self.__conn
 
     @property
     def roomID(self):

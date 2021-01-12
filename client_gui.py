@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QStackedWidget,QFrame,QWidget, QApplication,QLabel 
 # from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap, QPalette
 from PyQt5.QtCore import QRect, Qt
+from worker import ServerListener
 
 import sys
 import numpy as np
@@ -111,7 +112,12 @@ class Main(QWidget):
         self.next_button.clicked.connect(self.next_page)
         self.setGeometry(300, 300, 750, 800)
         self.mouse_clik_counter = 0
-        self.player = None
+        self.player = Client()
+        self.thread = ServerListener(self.player.client)
+
+    def closeEvent(self, event):
+        if self.player.playerID:
+            self.player.disconnect()
 
     def initUI(self):
 
@@ -135,7 +141,6 @@ class Main(QWidget):
 
     def insert_page(self, widget, index=-1):
         self.stacked_widget.insertWidget(index, widget)
-        print(index)
         self.set_button_state(self.stacked_widget.currentIndex())
 
     def next_page(self):
@@ -146,12 +151,8 @@ class Main(QWidget):
         if self.mouse_clik_counter == 0:
             self.next_button.setText("Graj!")
             self.mouse_clik_counter += 1
-            self.player = Client(self.player_name_input.text())
-            self.rooms = self.player.getRoomList()
-            self.list.clear()
-            for room in self.rooms:
-                self.list.addItem(str(room))
-            self.update()
+            self.player.register(self.player_name_input.text())
+            self.refreshList()
 
         elif self.mouse_clik_counter == 1:
             pass
@@ -162,7 +163,7 @@ class Main(QWidget):
         self.grid = QFormLayout() 
         self.grid.setFormAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter) 
 
-        self.player_name_input = QLineEdit(self)
+        self.player_name_input = QLineEdit('Player')
  
 
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
@@ -206,26 +207,50 @@ class Main(QWidget):
 
         """Main layout"""
         self.list = QListWidget()
+        self.list.currentItemChanged.connect(self.selected_room)
         self.btn_add_room = QPushButton('Dodaj pokój')
         self.btn_add_room.clicked.connect(self.create_room)
+        self.btn_get_rooms = QPushButton('Odśwież listę pokoi')
+        self.btn_get_rooms.clicked.connect(self.refreshList)
+        self.selected_room_input = QLineEdit()
+        self.btn_enter_room = QPushButton('Wejdź do pokoju')
+        self.btn_enter_room.clicked.connect(self.enterToRoom)
         self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
         self.layout_main.addLayout(self.layout_create_room)
         self.layout_main.addWidget(self.btn_add_room)
+        self.layout_main.addWidget(self.btn_get_rooms)
         self.layout_main.addWidget(QHLine())
         self.layout_main.addWidget(QLabel("Wybierz pokój", self))
         self.layout_main.addWidget(self.list)
+        self.layout_main.addWidget(self.selected_room_input)
+        self.layout_main.addWidget(self.btn_enter_room)
         self.networkTab.setLayout(self.layout_main)
 
         return self.networkTab
 
+    def refreshList(self):
+        self.rooms = self.player.getRoomList()
+        self.rooms.sort(key=lambda x: x[0])
+        self.list.clear()
+        for room in self.rooms:
+            self.list.addItem(f"{room[0]} The current number of players {room[2]}")
+
+    def selected_room(self):
+        selectedRoom = self.rooms[self.list.currentRow()]
+        self.selected_room_input.setText(selectedRoom[0])
+
     def create_room(self):
-        if self.room_name_label.text():
-            self.player.createRoom(self.room_name_label.text())
-            self.rooms = self.player.getRoomList()
-            self.list.clear()
+        if self.room_name_input.text():
+            self.player.createRoom(self.room_name_input.text())
+            self.refreshList()
+            self.thread.start()
+
+    def enterToRoom(self):
+        if len(self.selected_room_input.text()) > 0:
             for room in self.rooms:
-                self.list.addItem(str(room))
-        self.update()    
+                if room[0] == self.selected_room_input.text():
+                    self.player.joinToRoom(room[1])
+
 
 if __name__ == '__main__':
      app = QApplication(sys.argv)

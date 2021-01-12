@@ -31,10 +31,13 @@ class Room:
     @property
     def playerList(self):
         return self.__playerList
-
     @property
     def currentPlayer(self):
         return self.__currentPlayer
+
+    @property
+    def numberOfPlayers(self):
+        return self.__numberOfPlayers
 
     def addPlayer(self, player: Player):
         if self.__numberOfPlayers < 2:

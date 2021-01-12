@@ -45,7 +45,7 @@ class Server():
             return False
 
         elif action == 'register':
-            player = Player(data["name"], addr)
+            player = Player(data["name"], addr, conn)
             print(f"[NEW PLAYER] {player}")
             self.playersMap[player.playerID] = player
             self.send(conn, player.playerID)
@@ -59,19 +59,29 @@ class Server():
 
         elif action == "joinToRoom":
             room = self.roomsMap[data['roomID']]
-            player = self.playersMap[data["playerID"]]
-            result = room.addPlayer(player)
-            if result:
-                player.roomID = room.roomID
+            if room:
+                player = self.playersMap[data["playerID"]]
+                result = room.addPlayer(player)
+                if result:
+                    player.roomID = room.roomID
+                    self.startGame(room)
+            else:
+                result = False
             self.send(conn, result)
 
         elif action == "getRoomList":
             listRoom = []
             for room in self.roomsMap.values():
-                listRoom.append([room.roomName, room.roomID])
+                listRoom.append([room.roomName, room.roomID, room.numberOfPlayers])
             self.send(conn, listRoom)
 
         return True
+
+    def startGame(self, room):
+        print(room.playerList)
+        for player in room.playerList:
+            self.send(player.conn, {'action' : 'startGame'})
+
 
     def send(self, conn, data):
         message = json.dumps(data)
