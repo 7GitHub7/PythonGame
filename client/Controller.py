@@ -53,6 +53,7 @@ class Controller():
                 if room[0] == self.main.selected_room_input.text():
                     if self.player.joinToRoom(room[1]):
                         self.routeGame({'action': 'startGame'})
+                        self.main.resize(1200, 700)
                     else:
                         self.main.info_label.setText("Nie można wejść do pokoju")
                     break

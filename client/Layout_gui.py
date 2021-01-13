@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QStackedWidget,QFrame,QWidget, QApplication,QLabel 
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap, QPalette
 from PyQt5.QtCore import QRect, Qt
 from worker import ServerListener
+import PyQt5.QtWidgets as QtWidgets
 
 import sys
 import numpy as np
@@ -48,8 +49,8 @@ class Main(QWidget):
         super().__init__()
         self.initUI()
         self.stacked_widget.currentChanged.connect(self.set_button_state)
-        self.next_button.clicked.connect(self.next_page)
-        self.setGeometry(300, 300, 750, 800)
+        # self.next_button.clicked.connect(self.next_page)
+        self.setGeometry(150, 150, 700, 500)
         self.mouse_clik_counter = 0
  
 
@@ -59,13 +60,13 @@ class Main(QWidget):
 
     def initUI(self):
 
-        self.next_button = QPushButton('Dalej')
-        self.next_button.setEnabled(False)
+        # self.next_button = QPushButton('Dalej')
+        # self.next_button.setEnabled(False)
         self.stacked_widget = QStackedWidget()
 
         hbox = QHBoxLayout()
         hbox.addStretch(1)
-        hbox.addWidget(self.next_button)
+        # hbox.addWidget(self.next_button)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.stacked_widget)
@@ -87,6 +88,8 @@ class Main(QWidget):
             self.stacked_widget.setCurrentIndex(new_index)
 
         if self.mouse_clik_counter == 0:
+            self.resize(600, 750)
+            self.update()
             self.next_button.setText("Graj!")
             self.mouse_clik_counter += 1
             controller.player.register(self.player_name_input.text())
@@ -98,9 +101,18 @@ class Main(QWidget):
 
     def welcomeTabUI(self):
         """Strona pierwsza, z nazwą gracza i tekstem powitalnym"""
-        self.grid = QFormLayout() 
-        self.grid.setFormAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter) 
+        self.grid = QFormLayout()
+        
+        self.grid.setFormAlignment(Qt.AlignTop|Qt.AlignTop|Qt.AlignTop) 
+        self.next_button = QPushButton('Potwierdz')
+        self.next_button.setEnabled(False)
+        # self.next_button.setGeometry(200, 150, 100, 40) 
+        # self.next_button.resize(150, 50) 
+        self.next_button.clicked.connect(self.next_page)
+        
+        self.verticalSpacer = QtWidgets.QSpacerItem(150, 20, QtWidgets.QSizePolicy.Expanding)
 
+    
         self.player_name_input = QLineEdit('Player')
 
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
@@ -111,8 +123,11 @@ class Main(QWidget):
         self.player_name_label.setAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter)
         self.player_name_input.setAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter)
         self.grid.addWidget(self.title_label)
+        self.grid.addItem(self.verticalSpacer)
         self.grid.addWidget(self.player_name_label)
         self.grid.addWidget(self.player_name_input)
+        self.grid.addItem(self.verticalSpacer)
+        self.grid.addWidget(self.next_button)
 
         generalTab = QWidget()
         generalTab.setLayout(self.grid)

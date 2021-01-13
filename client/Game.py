@@ -91,4 +91,4 @@ class Game(QWidget):
             r_index =0     
             c_index = c_index + 1
         qp.setBrush(QColor(200, 0, 0))        
-        qp.drawEllipse(self.X_Circle-15, int(SQUARESIZE/10), SQUARESIZE-5, SQUARESIZE-5)
+        qp.drawEllipse(self.X_Circle-15, int(SQUARESIZE/100), SQUARESIZE-5, SQUARESIZE-5)
