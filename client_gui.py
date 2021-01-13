@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import (QStackedWidget,QFrame,QWidget, QApplication,QLabel ,QTabWidget,
                             QVBoxLayout,QCheckBox,QHBoxLayout,QPushButton,QLineEdit,QListWidget,QLabel,QGridLayout,QFormLayout)
-# from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap, QPalette
 from PyQt5.QtCore import QRect, Qt
 from worker import ServerListener
@@ -17,16 +16,31 @@ board = np.zeros((ROW_COUNT,COLUMN_COUNT))
 board[0][6] = 2
 board[1][6] = 2
 
+class ResulTable(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.__createTable()
+
+    def __createTable(self):
+        vBox = QVBoxLayout(self)
+        self.current_player_label = QLabel()
+        vBox.addWidget(self.current_player_label)
+
+    def setCurrentPlayer(self, playerName):
+        self.current_player_label.setText(f"Ruch gracza: {playerName}")
+
 class Game(QWidget):
-    X_Circle = 0
-    Y_Circle = 0
 
     def __init__(self):
         super().__init__()
         self.X_Circle = 0
         self.Y_Circle = 0
-
-        self.initUI()  
+        self.currentPlayer = None
+        self.player = None
+        self.thread = None
+        self.resultTable = None
+        self.initUI()
 
     def initUI(self):
         self.setGeometry(300, 300, 900, 900)
@@ -35,32 +49,33 @@ class Game(QWidget):
 
         self.show()
 
-    def mouseMoveEvent(self,e):
+    def mouseMoveEvent(self, e):
         self.X_Circle = e.x() 
-        self.Y_Circle = e.y() 
+        self.Y_Circle = e.y()
         self.update()
 
-    def get_next_open_row(self,board, col):
+    def get_next_open_row(self, board, col):
         for r in range(ROW_COUNT):
             if board[r][col] == 0:
                 return r        
 
     def update_board(self,board, row, col, player):
-	    board[row][col] = player    
+	    board[row][col] = player
 
-    def mouseDoubleClickEvent(self,e):
-        print("click")
-        pos_col = int(math.floor(e.x()/100))
-        if pos_col > 700:
-            pos_col = 6
-        pos_row = self.get_next_open_row(board,pos_col)
-        print(pos_col)     
-        print(pos_row)     
-        self.update_board(board,pos_row,pos_col,1)
-        np.flip(board, 0)
-        print(board)
-        self.update()
-  
+    def mousePressEvent(self,e):
+        if self.currentPlayer[1] == self.player.playerID:
+            if e.button() == Qt.LeftButton:
+                pos_col = int(math.floor(e.x()/100))
+                if pos_col > 700:
+                    pos_col = 6
+                pos_row = self.get_next_open_row(board,pos_col)
+                self.update_board(board,pos_row,pos_col,1)
+                np.flip(board, 0)
+                self.player.changePlayer()
+                self.currentPlayer = self.player.getCurrentPlayer()
+                self.resultTable.setCurrentPlayer(self.currentPlayer[0])
+                self.thread.start()
+                self.update()
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -75,7 +90,6 @@ class Game(QWidget):
         r_index =0 
         c_index =0
         board_display = np.rot90(np.transpose(board))
-        print(board_display)
         for c in board_display:
             for r in c:
                 qp.setBrush(QColor(0, 0, 0))
@@ -100,9 +114,6 @@ class QHLine(QFrame):
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
 
-
-
-
 class Main(QWidget):
 
     def __init__(self):
@@ -113,7 +124,9 @@ class Main(QWidget):
         self.setGeometry(300, 300, 750, 800)
         self.mouse_clik_counter = 0
         self.player = Client()
+        self.currentPlayer = None
         self.thread = ServerListener(self.player.client)
+        self.thread.route.connect(self.routeGame)
 
     def closeEvent(self, event):
         if self.player.playerID:
@@ -164,7 +177,6 @@ class Main(QWidget):
         self.grid.setFormAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter) 
 
         self.player_name_input = QLineEdit('Player')
- 
 
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
         self.title_label = QLabel("Witaj w Connect4", self)
@@ -181,13 +193,15 @@ class Main(QWidget):
         generalTab.setLayout(self.grid)
       
         return generalTab
-        
 
     def gameTabUI(self):
         """Create the Game page UI."""
         generalTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(Game())
+        self.resultTable = ResulTable()
+        self.game = Game()
+        layout = QHBoxLayout()
+        layout.addWidget(self.game)
+        layout.addWidget(self.resultTable)
         generalTab.setLayout(layout)
         return generalTab
 
@@ -197,7 +211,6 @@ class Main(QWidget):
         self.networkTab = QWidget()
         self.layout_main = QVBoxLayout()
         self.layout_create_room = QHBoxLayout()
-
 
         """Create room layout"""
         self.room_name_input = QLineEdit(self)
@@ -215,6 +228,8 @@ class Main(QWidget):
         self.selected_room_input = QLineEdit()
         self.btn_enter_room = QPushButton('Wejdź do pokoju')
         self.btn_enter_room.clicked.connect(self.enterToRoom)
+        self.info_label = QLabel()
+        self.info_label.setStyleSheet("font: 15pt Century Gothic; color: red")
         self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
         self.layout_main.addLayout(self.layout_create_room)
         self.layout_main.addWidget(self.btn_add_room)
@@ -224,6 +239,7 @@ class Main(QWidget):
         self.layout_main.addWidget(self.list)
         self.layout_main.addWidget(self.selected_room_input)
         self.layout_main.addWidget(self.btn_enter_room)
+        self.layout_main.addWidget(self.info_label)
         self.networkTab.setLayout(self.layout_main)
 
         return self.networkTab
@@ -244,13 +260,47 @@ class Main(QWidget):
             self.player.createRoom(self.room_name_input.text())
             self.refreshList()
             self.thread.start()
+            self.info_label.setText(f"Stworzono pokój: {self.room_name_input.text()}. Poczekaj na drugiego gracza.")
+            self.btn_add_room.setDisabled(True)
+            self.btn_enter_room.setDisabled(True)
+            self.btn_get_rooms.setDisabled(True)
+        else:
+            self.info_label.setText("Wpisz nazwę pokoju")
 
     def enterToRoom(self):
         if len(self.selected_room_input.text()) > 0:
             for room in self.rooms:
                 if room[0] == self.selected_room_input.text():
-                    self.player.joinToRoom(room[1])
+                    if self.player.joinToRoom(room[1]):
+                        self.routeGame({'action': 'startGame'})
+                    else:
+                        self.info_label.setText("Nie można wejść do pokoju")
+                    break
+            else:
+                self.info_label.setText("Nie znaleziono pokoju")
+        else:
+            self.info_label.setText("Nie wybrano pokoju")
 
+    def routeGame(self, data):
+
+        action = data['action']
+
+        if action == 'startGame':
+            self.currentPlayer = self.player.getCurrentPlayer()
+            if self.currentPlayer[1] != self.player.playerID:
+                self.thread.start()
+            self.game.currentPlayer = self.currentPlayer
+            self.game.player = self.player
+            self.game.thread = self.thread
+            self.game.resultTable = self.resultTable
+            self.resultTable.setCurrentPlayer(self.currentPlayer[0])
+            self.next_page()
+
+        elif action == 'changePlayer':
+            self.currentPlayer = self.player.getCurrentPlayer()
+            self.resultTable.setCurrentPlayer(self.currentPlayer[0])
+            self.game.currentPlayer = self.currentPlayer
+            self.resultTable.setCurrentPlayer(self.currentPlayer[0])
 
 if __name__ == '__main__':
      app = QApplication(sys.argv)

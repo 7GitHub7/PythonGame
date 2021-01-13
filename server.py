@@ -64,7 +64,7 @@ class Server():
                 result = room.addPlayer(player)
                 if result:
                     player.roomID = room.roomID
-                    self.startGame(room)
+                    self.send(room.playerList[0].conn, {'action' : 'startGame'})
             else:
                 result = False
             self.send(conn, result)
@@ -75,13 +75,16 @@ class Server():
                 listRoom.append([room.roomName, room.roomID, room.numberOfPlayers])
             self.send(conn, listRoom)
 
+        elif action == 'currentPlayer':
+            room = self.roomsMap[data['roomID']]
+            self.send(conn, [room.currentPlayer.playerName, room.currentPlayer.playerID])
+
+        elif action == 'changePlayer':
+            room = self.roomsMap[data['roomID']]
+            room.changePlayer()
+            self.send(room.currentPlayer.conn, {'action' : 'changePlayer'})
+
         return True
-
-    def startGame(self, room):
-        print(room.playerList)
-        for player in room.playerList:
-            self.send(player.conn, {'action' : 'startGame'})
-
 
     def send(self, conn, data):
         message = json.dumps(data)

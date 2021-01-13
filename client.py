@@ -35,6 +35,10 @@ class Client:
         msgRecv = json.loads(self.client.recv(2048))
         return msgRecv
 
+    def send(self, message):
+        msgSend = json.dumps(message)
+        self.client.send(msgSend.encode())
+
     def disconnect(self):
         disconnect = self.sendAndReceive({"action": "disconnect", "playerID": self.playerID})
         if disconnect:
@@ -54,6 +58,15 @@ class Client:
             self.roomID = roomID
             return True
         return False
+
+    def getCurrentPlayer(self):
+        currentPlayer = self.sendAndReceive({"action": "currentPlayer", "roomID": self.roomID})
+        return currentPlayer
+
+    def changePlayer(self):
+        self.send({"action": "changePlayer", "roomID": self.roomID})
+
+
 
 # if __name__ == "__main__":
 
