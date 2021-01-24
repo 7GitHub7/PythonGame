@@ -10,6 +10,12 @@ from client import *
 import math
 from Game import Game
 
+
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSlot
+
 class Controller():
 
     def __init__(self,main): 
@@ -53,7 +59,7 @@ class Controller():
                 if room[0] == self.main.selected_room_input.text():
                     if self.player.joinToRoom(room[1]):
                         self.routeGame({'action': 'startGame'})
-                        self.main.resize(1200, 700)
+                        # self.main.resize(1200, 700)
                     else:
                         self.main.info_label.setText("Nie można wejść do pokoju")
                     break

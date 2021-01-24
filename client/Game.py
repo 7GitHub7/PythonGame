@@ -5,6 +5,11 @@ from PyQt5.QtCore import QRect, Qt
 from worker import ServerListener
 
 import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSlot
+
+import sys
 import numpy as np
 from client import *
 import math
@@ -27,9 +32,10 @@ class Game(QWidget):
         self.thread = None
         self.resultTable = None
         self.initUI()
+        # self.setFixedSize(700,800)
 
     def initUI(self):
-        self.setGeometry(300, 300, 900, 900)
+        
         self.setMouseTracking(True)
         self.setWindowTitle('PyQt window') 
 
@@ -46,7 +52,33 @@ class Game(QWidget):
                 return r        
 
     def update_board(self,board, row, col, player):
-	    board[row][col] = player
+        if row is not None and col is not None:
+            board[row][col] = player
+
+    def winning_move(self,board, player):
+        # Check horizontal locations for win
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT):
+                if board[r][c] == player and board[r][c+1] == player and board[r][c+2] == player and board[r][c+3] == player:
+                    return True
+
+        # Check vertical locations for win
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT-3):
+                if board[r][c] == player and board[r+1][c] == player and board[r+2][c] == player and board[r+3][c] == player:
+                    return True
+
+        # Check positively sloped diaganols
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT-3):
+                if board[r][c] == player and board[r+1][c+1] == player and board[r+2][c+2] == player and board[r+3][c+3] == player:
+                    return True
+
+        # Check negatively sloped diaganols
+        for c in range(COLUMN_COUNT-3):
+            for r in range(3, ROW_COUNT):
+                if board[r][c] == player and board[r-1][c+1] == player and board[r-2][c+2] == player and board[r-3][c+3] == player:
+                    return True        
 
     def mousePressEvent(self,e):
         if self.currentPlayer[1] == self.player.playerID:
@@ -55,13 +87,17 @@ class Game(QWidget):
                 if pos_col > 700:
                     pos_col = 6
                 pos_row = self.get_next_open_row(board,pos_col)
-                self.update_board(board,pos_row,pos_col,1)
-                np.flip(board, 0)
-                self.player.changePlayer()
-                self.currentPlayer = self.player.getCurrentPlayer()
-                self.resultTable.setCurrentPlayer(self.currentPlayer[0])
-                self.thread.start()
-                self.update()
+                if pos_row is not None:
+                    print(board)  
+                    self.update_board(board,pos_row,pos_col,1)
+                    if self.winning_move(board,1):
+                        self.showDialog()
+                    np.flip(board, 0)
+                    self.player.changePlayer()
+                    self.currentPlayer = self.player.getCurrentPlayer()
+                    self.resultTable.setCurrentPlayer(self.currentPlayer[0])
+                    self.thread.start()
+                    self.update()
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -92,3 +128,18 @@ class Game(QWidget):
             c_index = c_index + 1
         qp.setBrush(QColor(200, 0, 0))        
         qp.drawEllipse(self.X_Circle-15, int(SQUARESIZE/100), SQUARESIZE-5, SQUARESIZE-5)
+
+
+    def showDialog(self):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText("Wygrał player 1")
+        msgBox.setWindowTitle("Chcesz zakończycz grę?")
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        
+
+        returnValue = msgBox.exec()
+        if returnValue == QMessageBox.Ok:
+            print('OK clicked')
+
+

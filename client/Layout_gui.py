@@ -4,6 +4,8 @@ from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap, QPalette
 from PyQt5.QtCore import QRect, Qt
 from worker import ServerListener
 import PyQt5.QtWidgets as QtWidgets
+from PyQt5.QtCore import QSize
+
 
 import sys
 import numpy as np
@@ -26,10 +28,14 @@ class ResulTable(QWidget):
     def __init__(self):
         super().__init__()
         self.__createTable()
+        # self.size(QSize(100,100))
+        self.setFixedSize(500,200)
 
     def __createTable(self):
         vBox = QVBoxLayout(self)
         self.current_player_label = QLabel()
+        self.current_player_label.setStyleSheet("font: 20pt Century Gothic")
+
         vBox.addWidget(self.current_player_label)
 
     def setCurrentPlayer(self, playerName):
@@ -88,15 +94,19 @@ class Main(QWidget):
             self.stacked_widget.setCurrentIndex(new_index)
 
         if self.mouse_clik_counter == 0:
-            self.resize(600, 750)
+            self.resize(600, 650)
             self.update()
             self.next_button.setText("Graj!")
             self.mouse_clik_counter += 1
             controller.player.register(self.player_name_input.text())
             controller.refreshList()
 
-        elif self.mouse_clik_counter == 1:
-            pass
+        if self.mouse_clik_counter == 2:
+            self.game.setFixedSize(700,750)
+            self.update()
+
+        if self.mouse_clik_counter == 1:
+            self.mouse_clik_counter += 1
 
 
     def welcomeTabUI(self):
@@ -117,7 +127,7 @@ class Main(QWidget):
 
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
         self.title_label = QLabel("Witaj w Connect4", self)
-        self.title_label.setStyleSheet("font: 30pt Century Gothic")
+        self.title_label.setStyleSheet("font: 22pt Century Gothic")
         self.player_name_label.setStyleSheet("font: 15pt Century Gothic")
         self.title_label.setAlignment(Qt.AlignLeading|Qt.AlignCenter|Qt.AlignCenter)
         self.player_name_label.setAlignment(Qt.AlignCenter|Qt.AlignCenter|Qt.AlignCenter)
@@ -160,7 +170,7 @@ class Main(QWidget):
         # self.btn_get_rooms.clicked.connect(self.refreshList)
         self.selected_room_input = QLineEdit()
         self.btn_enter_room = QPushButton('Wejdź do pokoju')
-        # self.btn_enter_room.clicked.connect(self.enterToRoom)
+        self.btn_enter_room.clicked.connect(self.next_page)
         self.info_label = QLabel()
         self.info_label.setStyleSheet("font: 15pt Century Gothic; color: red")
         self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
@@ -181,15 +191,56 @@ class Main(QWidget):
         """Strona trzecia - gra"""
         generalTab = QWidget()
         self.resultTable = ResulTable()
-        self.game = Game()
+        self.game = Game() 
+        
         layout = QHBoxLayout()
+        player_panel_vbox = QVBoxLayout()
+        player_active_hbox = QHBoxLayout()
+        player_buttons_hbox = QHBoxLayout()
+
+        moves_list = QListWidget()
+        moves_list.addItem("1. Gracz XYZ. Kolumna 2, Wiersz: 1 ")
+        moves_list.addItem("2. Gracz Szymon. Kolumna 6, Wiersz: 1 ")
+        moves_list_label = QLabel(f"Przebieg spotkania")
+        room_name_label = QLabel(f"Pokój: test")
+        room_name_label.setStyleSheet("font: 15pt Century Gothic; color: black")
+        time_label = QLabel(f"Czas: 00:00:00")
+        btn_player_active_1 = QPushButton('PLayer 1')
+        btn_player_active_2 = QPushButton('PLayer 2')
+        btn_player_active_2.setEnabled(False)
+        btn_end_game = QPushButton('rezygnuję')
+        btn_undo_move = QPushButton('cofnij ruch')
+        btn_player_active_1.setFixedSize(150,50)
+        btn_player_active_2.setFixedSize(150,50)
+
         layout.addWidget(self.game)
-        layout.addWidget(self.resultTable)
+        layout.addLayout(player_panel_vbox)
+        
+        player_panel_vbox.addWidget(room_name_label)
+        player_panel_vbox.addLayout(player_active_hbox)
+
+        player_active_hbox.addWidget(btn_player_active_1)
+        player_active_hbox.addWidget(btn_player_active_2)
+        
+        # layout.addWidget(self.resultTable)
+        player_panel_vbox.addWidget(time_label)
+        player_panel_vbox.addWidget(QHLine())
+        
+        player_panel_vbox.addWidget(moves_list_label)
+        player_panel_vbox.addWidget(moves_list)
+
+        player_panel_vbox.addLayout(player_buttons_hbox)
+        player_buttons_hbox.addWidget(btn_end_game)
+        player_buttons_hbox.addWidget(btn_undo_move)
+
+
+
         generalTab.setLayout(layout)
         return generalTab
 
-   
+    
 
+    
 
 if __name__ == '__main__':
      app = QApplication(sys.argv)
