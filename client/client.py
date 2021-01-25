@@ -1,18 +1,9 @@
 import json
-import threading
 import socket
 
-HEADER = 64
 PORT = 5050
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-# SERVER = "192.168.56.1"
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
-
-# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# # client.bind(ADDR)
-# client.connect(ADDR)
 
 class Client:
 
@@ -49,8 +40,7 @@ class Client:
         self.roomID = self.sendAndReceive({"action": "createRoom", "name": roomName, "playerID": self.playerID})
 
     def getRoomList(self):
-        roomList = self.sendAndReceive({"action": "getRoomList"})
-        return roomList
+        return self.sendAndReceive({"action": "getRoomList"})
 
     def joinToRoom(self, roomID):
         result = self.sendAndReceive({"action": "joinToRoom", "roomID": roomID, "playerID": self.playerID })
@@ -60,18 +50,17 @@ class Client:
         return False
 
     def getCurrentPlayer(self):
-        currentPlayer = self.sendAndReceive({"action": "currentPlayer", "roomID": self.roomID})
-        return currentPlayer
+        return self.sendAndReceive({"action": "currentPlayer", "roomID": self.roomID})
+
+    def updateBoard(self, board):
+        return self.sendAndReceive({"action": "updateBoard", "board": board, "roomID": self.roomID})
+
+    def getBoard(self):
+        return self.sendAndReceive({"action": "getBoard", "roomID": self.roomID})
 
     def changePlayer(self):
         self.send({"action": "changePlayer", "roomID": self.roomID})
 
+    def endGame(self, reason):
+        self.send({"action": "endGame", "roomID": self.roomID, "reason": reason})
 
-
-# if __name__ == "__main__":
-
-    # player = Client("PlayerXD")
-    # player.createRoom("ddddsfsdf")
-    # room = player.getRoomList()
-    # player.joinToRoom(room[0][1])
-    # player.disconnect()

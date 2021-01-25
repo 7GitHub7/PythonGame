@@ -18,10 +18,9 @@ from PyQt5.QtCore import pyqtSlot
 
 class Controller():
 
-    def __init__(self,main): 
+    def __init__(self, main):
         self.main = main
         self.player = Client()
-        self.currentPlayer = None
         self.thread = ServerListener(self.player.client)
         self.thread.route.connect(self.routeGame)
         self.main.list.currentItemChanged.connect(self.selected_room)
@@ -50,6 +49,7 @@ class Controller():
             self.main.btn_add_room.setDisabled(True)
             self.main.btn_enter_room.setDisabled(True)
             self.main.btn_get_rooms.setDisabled(True)
+            self.main.game.color = 1
         else:
             self.main.info_label.setText("Wpisz nazwę pokoju")
 
@@ -59,7 +59,7 @@ class Controller():
                 if room[0] == self.main.selected_room_input.text():
                     if self.player.joinToRoom(room[1]):
                         self.routeGame({'action': 'startGame'})
-                        # self.main.resize(1200, 700)
+                        self.main.game.color = 2
                     else:
                         self.main.info_label.setText("Nie można wejść do pokoju")
                     break
@@ -73,18 +73,31 @@ class Controller():
         action = data['action']
 
         if action == 'startGame':
-            self.currentPlayer = self.player.getCurrentPlayer()
-            if self.currentPlayer[1] != self.player.playerID:
+            currentPlayer = self.player.getCurrentPlayer()
+            if currentPlayer[1] != self.player.playerID:
                 self.thread.start()
-            self.main.game.currentPlayer = self.currentPlayer
+            self.main.game.currentPlayer = currentPlayer
             self.main.game.player = self.player
             self.main.game.thread = self.thread
             self.main.game.resultTable = self.main.resultTable
-            self.main.resultTable.setCurrentPlayer(self.currentPlayer[0])
+            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+            self.main.resultTable.startTimer()
             self.main.next_page()
 
         elif action == 'changePlayer':
-            self.currentPlayer = self.player.getCurrentPlayer()
-            self.main.resultTable.setCurrentPlayer(self.currentPlayer[0])
-            self.main.game.currentPlayer = self.currentPlayer
-            self.main.resultTable.setCurrentPlayer(self.currentPlayer[0])
+            currentPlayer = self.player.getCurrentPlayer()
+            self.main.game.board = np.asarray(self.player.getBoard())
+            self.main.game.update()
+            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+            self.main.game.currentPlayer = currentPlayer
+            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+
+        elif action == 'endGame':
+            if data['reason'] == 'four':
+                time = self.main.resultTable.stopTimer()
+                self.main.game.showDialog(f"Wygrał {self.player.getCurrentPlayer()[0]}\nCzas gry: {time}")
+            else:
+                self.main.game.showDialog(f"Gracz {self.player.getCurrentPlayer()[0]} opuścił rozgrywkę")
+
+    def quitGame(self):
+        self.player.endGame('leave')

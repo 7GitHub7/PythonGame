@@ -1,5 +1,4 @@
 import uuid, random
-import numpy as np
 from player import Player
 
 class Room:
@@ -10,7 +9,7 @@ class Room:
         self.__playerList = []
         self.__numberOfPlayers = 0
         self.__currentPlayer = None
-        self.__board = np.zeros((6,7))
+        self.__board = None
 
     @property
     def board(self):

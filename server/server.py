@@ -4,12 +4,9 @@ import threading
 from player import Player
 from room import Room
 
-HEADER = 64
 PORT = 5050
-# SERVER = socket.gethostbyname(socket.gethostname())
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
 
 class Server():
 
@@ -24,13 +21,11 @@ class Server():
         print(f"[NEW CONNECTION] {addr} connected.")
         connected = True
         while connected:
-            data = conn.recv(1024)
+            data = conn.recv(2048)
             data = json.loads(data)
             if not self.route(conn, addr, data):
                 connected = False
                 print(f"[DISCONNECT] {addr}")
-                print(f"Players: {self.playersMap}")
-                print(f"Rooms: {self.roomsMap}")
 
     def route(self,conn, addr, data):
         action = data['action']
@@ -78,6 +73,22 @@ class Server():
         elif action == 'currentPlayer':
             room = self.roomsMap[data['roomID']]
             self.send(conn, [room.currentPlayer.playerName, room.currentPlayer.playerID])
+
+        elif action == "updateBoard":
+            room = self.roomsMap[data['roomID']]
+            room.board = data['board']
+            self.send(room.currentPlayer.conn, True)
+
+        elif action == 'getBoard':
+            room = self.roomsMap[data['roomID']]
+            self.send(room.currentPlayer.conn, room.board)
+
+        elif action == 'endGame':
+            room = self.roomsMap[data['roomID']]
+            if room.currentPlayer == room.playerList[0]:
+                self.send(room.playerList[1].conn, {'action' : 'endGame', 'reason': data['reason']})
+            else:
+                self.send(room.playerList[0].conn, {'action': 'endGame', 'reason': data['reason']})
 
         elif action == 'changePlayer':
             room = self.roomsMap[data['roomID']]
