@@ -24,7 +24,6 @@ class ResulTable(QWidget):
     def __createTable(self):
         vBox = QVBoxLayout(self)
 
-        self.curr_time = QTime(00, 00, 00)
         self.timer = QTimer()
         self.timer.timeout.connect(self.__time)
 
@@ -42,11 +41,11 @@ class ResulTable(QWidget):
         self.current_player_label.setText(f"Ruch gracza: {playerName}")
 
     def startTimer(self):
+        self.curr_time = QTime(00, 00, 00)
         self.timer.start(1000)
 
     def stopTimer(self):
         self.timer.stop()
-        self.curr_time = QTime(00, 00, 00)
         self.time_label.setText(f"Czas: {self.curr_time.toString('hh:mm:ss')}")
         return self.curr_time.toString('hh:mm:ss')
 
