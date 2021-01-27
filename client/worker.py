@@ -10,7 +10,10 @@ class ServerListener(QThread):
         self.client = client
 
     def run(self):
-        data = json.loads(self.client.recv(2048))
-        print(data)
-        self.route.emit(data)
+        while True:
+            data = json.loads(self.client.recv(2048))
+            # print(data)
+            self.route.emit(data)
+            if data['action'] == 'endGame':
+                break
 

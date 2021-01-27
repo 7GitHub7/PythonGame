@@ -36,6 +36,7 @@ class Controller():
         for room in self.main.rooms:
             self.main.list.addItem(f"{room[0]} The current number of players {room[2]}")
 
+
     def selected_room(self):
         selectedRoom = self.main.rooms[self.main.list.currentRow()]
         self.main.selected_room_input.setText(selectedRoom[0])
@@ -73,34 +74,33 @@ class Controller():
         action = data['action']
 
         if action == 'startGame':
-            currentPlayer = self.player.getCurrentPlayer()
-            if currentPlayer[1] != self.player.playerID:
-                self.thread.start()
-            self.main.game.currentPlayer = currentPlayer
+            self.thread.start()
+            self.player.getCurrentPlayer()
             self.main.game.player = self.player
             self.main.game.thread = self.thread
             self.main.game.resultTable = self.main.resultTable
-            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
             self.main.resultTable.startTimer()
             self.main.next_page()
 
-        elif action == 'changePlayer':
-            currentPlayer = self.player.getCurrentPlayer()
-            print(currentPlayer)
-            if isinstance(currentPlayer, dict):
-                data = currentPlayer
-                action = data['action']
-            else:
-                self.main.game.board = np.asarray(self.player.getBoard())
-                self.main.game.update()
-                self.main.resultTable.setCurrentPlayer(currentPlayer[0])
-                self.main.game.currentPlayer = currentPlayer
-                self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+        elif action == 'currentPlayer':
+            self.main.resultTable.setCurrentPlayer(data['currentPlayer'][0])
+            self.main.game.currentPlayer = data['currentPlayer']
 
-        if action == 'endGame':
+        elif action == 'getBoard':
+            self.main.game.board = np.asarray(data['board'])
+            self.main.game.update()
+
+        elif action == 'updateBoard':
+            self.player.changePlayer()
+            self.player.getCurrentPlayer()
+
+        elif action == 'changePlayer':
+            self.player.getCurrentPlayer()
+            self.player.getBoard()
+
+        elif action == 'endGame':
             time = self.main.resultTable.stopTimer()
             if data['reason'] == 'four':
-                self.main.game.showDialog(f"Wygrał {self.player.getCurrentPlayer()[0]}\nCzas gry: {time}")
+                self.main.game.showDialog(f"Wygrał {self.main.game.currentPlayer[0]}\nCzas gry: {time}")
             else:
                 self.main.game.showDialog(f"Drugi gracz opuścił rozgrywkę")
-            self.main.back_page()

@@ -121,6 +121,7 @@ class Main(QWidget):
 
     def back_page(self):
         try:
+            self.controller.player.roomID = None
             self.game.board = np.zeros((6, 7))
             self.mouse_clik_counter -= 1
             self.resize(600, 650)
@@ -132,17 +133,11 @@ class Main(QWidget):
             self.room_name_input.clear()
             self.info_label.clear()
             self.update()
-            self.controller.refreshList()
         except Exception as e:
             print(e)
 
     def quit_game(self):
-        if not self.controller.thread.isRunning():
-            self.controller.thread.start()
         self.controller.player.endGame("quit")
-
-        self.back_page()
-        self.controller.player.roomID = None
 
     def welcomeTabUI(self):
         """Strona pierwsza, z nazwą gracza i tekstem powitalnym"""

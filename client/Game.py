@@ -83,11 +83,7 @@ class Game(QWidget):
                         self.player.endGame('four')
                     else:
                         self.player.updateBoard(self.board.tolist())
-                        self.player.changePlayer()
-                        self.currentPlayer = self.player.getCurrentPlayer()
-                        self.resultTable.setCurrentPlayer(self.currentPlayer[0])
                         self.update()
-                    self.thread.start()
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -130,7 +126,7 @@ class Game(QWidget):
         msgBox.setWindowTitle("Koniec gry")
 
         returnValue = msgBox.exec()
-        # if returnValue == QMessageBox.Ok:
-        #     # self.main.back_page()
+        if returnValue == QMessageBox.Ok:
+            self.main.back_page()
 
 

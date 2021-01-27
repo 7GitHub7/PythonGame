@@ -50,13 +50,13 @@ class Client:
         return False
 
     def getCurrentPlayer(self):
-        return self.sendAndReceive({"action": "currentPlayer", "roomID": self.roomID, "playerID": self.playerID})
+        self.send({"action": "currentPlayer", "roomID": self.roomID, "playerID": self.playerID})
 
     def updateBoard(self, board):
-        return self.sendAndReceive({"action": "updateBoard", "board": board, "roomID": self.roomID})
+        return self.send({"action": "updateBoard", "board": board, "roomID": self.roomID})
 
     def getBoard(self):
-        return self.sendAndReceive({"action": "getBoard", "roomID": self.roomID})
+        self.send({"action": "getBoard", "roomID": self.roomID})
 
     def changePlayer(self):
         self.send({"action": "changePlayer", "roomID": self.roomID})
