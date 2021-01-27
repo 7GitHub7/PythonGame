@@ -53,13 +53,11 @@ class ResulTable(QWidget):
         self.curr_time = self.curr_time.addSecs(1)
         self.time_label.setText(f"Czas: {self.curr_time.toString('hh:mm:ss')}")
 
-
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
-
 
 class Main(QWidget):
 

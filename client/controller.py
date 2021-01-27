@@ -74,7 +74,8 @@ class Controller():
         action = data['action']
 
         if action == 'startGame':
-            self.thread.start()
+            if not self.thread.isRunning():
+                self.thread.start()
             self.player.getCurrentPlayer()
             self.main.game.player = self.player
             self.main.game.thread = self.thread
