@@ -27,13 +27,12 @@ class Controller():
         self.main.btn_get_rooms.clicked.connect(self.refreshList)
         self.main.btn_enter_room.clicked.connect(self.enterToRoom)
 
-
     def refreshList(self):
         self.main.rooms = self.player.getRoomList()
         self.main.rooms.sort(key=lambda x: x[0])
         self.main.list.clear()
         for room in self.main.rooms:
-            self.main.list.addItem(f"{room[0]} The current number of players {room[2]}")
+            self.main.list.addItem(f"{room[0]} Liczba graczy: {room[2]}")
 
     def selected_room(self):
         if self.main.rooms:
