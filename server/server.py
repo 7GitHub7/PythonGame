@@ -10,8 +10,8 @@ ADDR = (SERVER, PORT)
 
 class Server():
 
-    playersMap = {}
-    roomsMap = {}
+    playersMap = dict()
+    roomsMap = dict()
 
     def __init__(self):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +23,6 @@ class Server():
         while connected:
             data = conn.recv(2048)
             data = json.loads(data)
-            print(data)
             if not self.route(conn, addr, data):
                 connected = False
                 print(f"[DISCONNECT] {addr}")
@@ -90,6 +89,8 @@ class Server():
                 for playerRoom in room.playerList:
                     self.send(playerRoom.conn, {'action': 'endGame', 'reason': data['reason']})
                     playerRoom.roomID = None
+
+                del self.roomsMap[data['roomID']]
 
         elif action == 'changePlayer':
             room = self.roomsMap[data['roomID']]

@@ -8,7 +8,6 @@ import math
 ROW_COUNT = 6
 COLUMN_COUNT = 7 
 SQUARESIZE = 100
-# board = np.zeros((ROW_COUNT,COLUMN_COUNT))
 
 class Game(QWidget):
 
@@ -24,6 +23,7 @@ class Game(QWidget):
         self.color = None
         self.initUI()
         self.board = np.zeros((ROW_COUNT,COLUMN_COUNT))
+        self.setFixedSize(700,750)
 
     def initUI(self):
         
@@ -46,25 +46,21 @@ class Game(QWidget):
             self.board[row][col] = player
 
     def winning_move(self, player):
-        # Check horizontal locations for win
         for c in range(COLUMN_COUNT-3):
             for r in range(ROW_COUNT):
                 if self.board[r][c] == player and self.board[r][c+1] == player and self.board[r][c+2] == player and self.board[r][c+3] == player:
                     return True
 
-        # Check vertical locations for win
         for c in range(COLUMN_COUNT):
             for r in range(ROW_COUNT-3):
                 if self.board[r][c] == player and self.board[r+1][c] == player and self.board[r+2][c] == player and self.board[r+3][c] == player:
                     return True
 
-        # Check positively sloped diaganols
         for c in range(COLUMN_COUNT-3):
             for r in range(ROW_COUNT-3):
                 if self.board[r][c] == player and self.board[r+1][c+1] == player and self.board[r+2][c+2] == player and self.board[r+3][c+3] == player:
                     return True
 
-        # Check negatively sloped diaganols
         for c in range(COLUMN_COUNT-3):
             for r in range(3, ROW_COUNT):
                 if self.board[r][c] == player and self.board[r-1][c+1] == player and self.board[r-2][c+2] == player and self.board[r-3][c+3] == player:
@@ -100,24 +96,28 @@ class Game(QWidget):
         board_display = np.rot90(np.transpose(board))
         for c in board_display:
             for r in c:
-                qp.setBrush(QColor(0, 0, 0))
+                qp.setBrush(QColor(120, 144, 156))
                 qp.drawRect(r_index*SQUARESIZE, c_index*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE)
                 if r == 1:
-                    qp.setBrush(QColor(200, 0, 0))
+                    qp.setBrush(QColor(216, 0, 39))
                 elif r == 2:
-                    qp.setBrush(QColor(100, 0, 200))
+                    qp.setBrush(QColor(99, 0, 158))
                 elif r == 0:
-                    qp.setBrush(QColor(100, 100, 0))         
+                    qp.setBrush(QColor(200, 200, 200))
                 qp.drawEllipse(r_index*SQUARESIZE, c_index*SQUARESIZE+SQUARESIZE, SQUARESIZE-5, SQUARESIZE-5)
                 r_index = r_index + 1
             r_index =0     
             c_index = c_index + 1
         if self.color == 1:
-            qp.setBrush(QColor(200, 0, 0))
+            qp.setBrush(QColor(216, 0, 39))
         else:
-            qp.setBrush(QColor(100, 0, 200))
-        qp.drawEllipse(self.X_Circle-15, int(SQUARESIZE/100), SQUARESIZE-5, SQUARESIZE-5)
-
+            qp.setBrush(QColor(99, 0, 158))
+        if self.X_Circle < 650 and self.X_Circle > 50:
+            qp.drawEllipse(self.X_Circle-50, int(SQUARESIZE/100), SQUARESIZE-5, SQUARESIZE-5)
+        elif self.X_Circle >= 650:
+            qp.drawEllipse(600, int(SQUARESIZE / 100), SQUARESIZE - 5, SQUARESIZE - 5)
+        elif self.X_Circle <= 50:
+            qp.drawEllipse(0, int(SQUARESIZE/100), SQUARESIZE-5, SQUARESIZE-5)
 
     def showDialog(self, text):
         msgBox = QMessageBox()

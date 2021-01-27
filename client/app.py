@@ -11,8 +11,8 @@ import sys
 import numpy as np
 from client import *
 import math
-from Game import Game
-from Controller import Controller
+from game import Game
+from controller import Controller
 
 
 class ResulTable(QWidget):
@@ -20,7 +20,6 @@ class ResulTable(QWidget):
     def __init__(self):
         super().__init__()
         self.__createTable()
-        self.setFixedSize(500,200)
 
     def __createTable(self):
         vBox = QVBoxLayout(self)
@@ -30,8 +29,8 @@ class ResulTable(QWidget):
         self.timer.timeout.connect(self.__time)
 
         self.current_player_label = QLabel()
-        self.current_player_label.setStyleSheet("font: 20pt Century Gothic")
-        self.time_label = QLabel()
+        self.current_player_label.setStyleSheet("font: 15pt Century Gothic")
+        self.time_label = QLabel(f"Czas: 00:00:00")
         self.time_label.setStyleSheet("font: 15pt Century Gothic")
 
         vBox.addWidget(self.current_player_label)
@@ -103,7 +102,6 @@ class Main(QWidget):
         new_index = self.stacked_widget.currentIndex()+1
         if new_index < len(self.stacked_widget):
             self.stacked_widget.setCurrentIndex(new_index)
-
         if self.mouse_clik_counter == 0:
             self.resize(600, 650)
             self.update()
@@ -112,29 +110,25 @@ class Main(QWidget):
             self.controller.player.register(self.player_name_input.text())
             self.controller.refreshList()
 
-        if self.mouse_clik_counter == 2:
-            self.game.setFixedSize(700,750)
+        elif self.mouse_clik_counter == 1:
+            self.game.show()
+            self.setFixedSize(1100, 750)
             self.update()
-
-        if self.mouse_clik_counter == 1:
-            self.mouse_clik_counter += 1
 
     def back_page(self):
-        try:
-            self.controller.player.roomID = None
-            self.game.board = np.zeros((6, 7))
-            self.mouse_clik_counter -= 1
-            self.resize(600, 650)
-            self.stacked_widget.setCurrentIndex(1)
-            self.btn_add_room.setDisabled(False)
-            self.btn_enter_room.setDisabled(False)
-            self.btn_get_rooms.setDisabled(False)
-            self.selected_room_input.clear()
-            self.room_name_input.clear()
-            self.info_label.clear()
-            self.update()
-        except Exception as e:
-            print(e)
+        self.controller.player.roomID = None
+        self.game.board = np.zeros((6, 7))
+        self.game.hide()
+        self.setFixedSize(600, 650)
+        self.stacked_widget.setCurrentIndex(1)
+        self.btn_add_room.setDisabled(False)
+        self.btn_enter_room.setDisabled(False)
+        self.btn_get_rooms.setDisabled(False)
+        self.selected_room_input.clear()
+        self.room_name_input.clear()
+        self.info_label.clear()
+        self.controller.refreshList()
+        self.update()
 
     def quit_game(self):
         self.controller.player.endGame("quit")
@@ -150,7 +144,6 @@ class Main(QWidget):
         
         self.verticalSpacer = QtWidgets.QSpacerItem(150, 20, QtWidgets.QSizePolicy.Expanding)
 
-    
         self.player_name_input = QLineEdit('Player')
 
         self.player_name_label = QLabel("Podaj swoją nazwę gracza", self)
@@ -180,7 +173,6 @@ class Main(QWidget):
         self.layout_main = QVBoxLayout()
         self.layout_create_room = QHBoxLayout()
 
-
         """Create room layout"""
         self.room_name_input = QLineEdit(self)
         self.room_name_label = QLabel("Nazwa", self)
@@ -195,7 +187,7 @@ class Main(QWidget):
         self.btn_enter_room = QPushButton('Wejdź do pokoju')
         self.btn_enter_room.clicked.connect(lambda: self.controller.enterToRoom)
         self.info_label = QLabel()
-        self.info_label.setStyleSheet("font: 15pt Century Gothic; color: red")
+        self.info_label.setStyleSheet("font: 15pt Century Gothic")
         self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
         self.layout_main.addLayout(self.layout_create_room)
         self.layout_main.addWidget(self.btn_add_room)
@@ -215,6 +207,7 @@ class Main(QWidget):
         generalTab = QWidget()
         self.resultTable = ResulTable()
         self.game = Game(self)
+        self.game.hide()
         self.btn_quit_game = QPushButton("Opuść grę")
         self.btn_quit_game.clicked.connect(self.quit_game)
 

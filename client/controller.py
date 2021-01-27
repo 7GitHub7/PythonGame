@@ -8,8 +8,7 @@ import sys
 import numpy as np
 from client import *
 import math
-from Game import Game
-
+from game import Game
 
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
@@ -36,10 +35,10 @@ class Controller():
         for room in self.main.rooms:
             self.main.list.addItem(f"{room[0]} The current number of players {room[2]}")
 
-
     def selected_room(self):
-        selectedRoom = self.main.rooms[self.main.list.currentRow()]
-        self.main.selected_room_input.setText(selectedRoom[0])
+        if self.main.rooms:
+            selectedRoom = self.main.rooms[self.main.list.currentRow()]
+            self.main.selected_room_input.setText(selectedRoom[0])
 
     def create_room(self):
         if self.main.room_name_input.text():
@@ -104,4 +103,4 @@ class Controller():
             if data['reason'] == 'four':
                 self.main.game.showDialog(f"Wygrał {self.main.game.currentPlayer[0]}\nCzas gry: {time}")
             else:
-                self.main.game.showDialog(f"Drugi gracz opuścił rozgrywkę")
+                self.main.game.showDialog(f"Gra została przerwana")
