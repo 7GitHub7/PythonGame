@@ -86,18 +86,21 @@ class Controller():
 
         elif action == 'changePlayer':
             currentPlayer = self.player.getCurrentPlayer()
-            self.main.game.board = np.asarray(self.player.getBoard())
-            self.main.game.update()
-            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
-            self.main.game.currentPlayer = currentPlayer
-            self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+            print(currentPlayer)
+            if isinstance(currentPlayer, dict):
+                data = currentPlayer
+                action = data['action']
+            else:
+                self.main.game.board = np.asarray(self.player.getBoard())
+                self.main.game.update()
+                self.main.resultTable.setCurrentPlayer(currentPlayer[0])
+                self.main.game.currentPlayer = currentPlayer
+                self.main.resultTable.setCurrentPlayer(currentPlayer[0])
 
-        elif action == 'endGame':
+        if action == 'endGame':
+            time = self.main.resultTable.stopTimer()
             if data['reason'] == 'four':
-                time = self.main.resultTable.stopTimer()
                 self.main.game.showDialog(f"Wygrał {self.player.getCurrentPlayer()[0]}\nCzas gry: {time}")
             else:
-                self.main.game.showDialog(f"Gracz {self.player.getCurrentPlayer()[0]} opuścił rozgrywkę")
-
-    def quitGame(self):
-        self.player.endGame('leave')
+                self.main.game.showDialog(f"Drugi gracz opuścił rozgrywkę")
+            self.main.back_page()

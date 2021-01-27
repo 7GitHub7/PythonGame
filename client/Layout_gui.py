@@ -47,6 +47,8 @@ class ResulTable(QWidget):
 
     def stopTimer(self):
         self.timer.stop()
+        self.curr_time = QTime(00, 00, 00)
+        self.time_label.setText(f"Czas: {self.curr_time.toString('hh:mm:ss')}")
         return self.curr_time.toString('hh:mm:ss')
 
     def __time(self):
@@ -117,6 +119,30 @@ class Main(QWidget):
         if self.mouse_clik_counter == 1:
             self.mouse_clik_counter += 1
 
+    def back_page(self):
+        try:
+            self.game.board = np.zeros((6, 7))
+            self.mouse_clik_counter -= 1
+            self.resize(600, 650)
+            self.stacked_widget.setCurrentIndex(1)
+            self.btn_add_room.setDisabled(False)
+            self.btn_enter_room.setDisabled(False)
+            self.btn_get_rooms.setDisabled(False)
+            self.selected_room_input.clear()
+            self.room_name_input.clear()
+            self.info_label.clear()
+            self.update()
+            self.controller.refreshList()
+        except Exception as e:
+            print(e)
+
+    def quit_game(self):
+        if not self.controller.thread.isRunning():
+            self.controller.thread.start()
+        self.controller.player.endGame("quit")
+
+        self.back_page()
+        self.controller.player.roomID = None
 
     def welcomeTabUI(self):
         """Strona pierwsza, z nazwą gracza i tekstem powitalnym"""
@@ -193,13 +219,16 @@ class Main(QWidget):
         """Strona trzecia - gra"""
         generalTab = QWidget()
         self.resultTable = ResulTable()
-        self.game = Game()
+        self.game = Game(self)
+        self.btn_quit_game = QPushButton("Opuść grę")
+        self.btn_quit_game.clicked.connect(self.quit_game)
 
         vBox = QVBoxLayout()
-        
+
         layout = QHBoxLayout()
         layout.addWidget(self.game)
         layout.addLayout(vBox)
+        vBox.addWidget(self.btn_quit_game)
 
         vBox.addWidget(self.resultTable)
 

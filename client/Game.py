@@ -12,8 +12,9 @@ SQUARESIZE = 100
 
 class Game(QWidget):
 
-    def __init__(self):
+    def __init__(self, main):
         super().__init__()
+        self.main = main
         self.X_Circle = 0
         self.Y_Circle = 0
         self.currentPlayer = None
@@ -80,15 +81,13 @@ class Game(QWidget):
                     self.update_board(pos_row,pos_col, self.color)
                     if self.winning_move(self.color):
                         self.player.endGame('four')
-                        time = self.resultTable.stopTimer()
-                        self.showDialog(f"Wygrał {self.currentPlayer[0]}\nCzas gry: {time}")
                     else:
                         self.player.updateBoard(self.board.tolist())
                         self.player.changePlayer()
                         self.currentPlayer = self.player.getCurrentPlayer()
                         self.resultTable.setCurrentPlayer(self.currentPlayer[0])
-                        self.thread.start()
                         self.update()
+                    self.thread.start()
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -131,7 +130,7 @@ class Game(QWidget):
         msgBox.setWindowTitle("Koniec gry")
 
         returnValue = msgBox.exec()
-        if returnValue == QMessageBox.Ok:
-            print('OK clicked')
+        # if returnValue == QMessageBox.Ok:
+        #     # self.main.back_page()
 
 

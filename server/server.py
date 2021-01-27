@@ -23,11 +23,12 @@ class Server():
         while connected:
             data = conn.recv(2048)
             data = json.loads(data)
+            print(data)
             if not self.route(conn, addr, data):
                 connected = False
                 print(f"[DISCONNECT] {addr}")
 
-    def route(self,conn, addr, data):
+    def route(self, conn, addr, data):
         action = data['action']
 
         if action == 'disconnect':
@@ -71,24 +72,28 @@ class Server():
             self.send(conn, listRoom)
 
         elif action == 'currentPlayer':
-            room = self.roomsMap[data['roomID']]
-            self.send(conn, [room.currentPlayer.playerName, room.currentPlayer.playerID])
+            if data['roomID'] in self.roomsMap.keys():
+                room = self.roomsMap[data['roomID']]
+                self.send(conn, [room.currentPlayer.playerName, room.currentPlayer.playerID])
+            else:
+                self.send(conn, {'action': 'endGame', 'reason': 'quit'})
 
         elif action == "updateBoard":
             room = self.roomsMap[data['roomID']]
             room.board = data['board']
-            self.send(room.currentPlayer.conn, True)
+            self.send(conn, True)
 
         elif action == 'getBoard':
             room = self.roomsMap[data['roomID']]
-            self.send(room.currentPlayer.conn, room.board)
+            self.send(conn, room.board)
 
         elif action == 'endGame':
-            room = self.roomsMap[data['roomID']]
-            if room.currentPlayer == room.playerList[0]:
-                self.send(room.playerList[1].conn, {'action' : 'endGame', 'reason': data['reason']})
-            else:
-                self.send(room.playerList[0].conn, {'action': 'endGame', 'reason': data['reason']})
+            if data['roomID'] in self.roomsMap.keys():
+                room = self.roomsMap[data['roomID']]
+                for playerRoom in room.playerList:
+                    self.send(playerRoom.conn, {'action': 'endGame', 'reason': data['reason']})
+                    playerRoom.roomID = None
+
 
         elif action == 'changePlayer':
             room = self.roomsMap[data['roomID']]
