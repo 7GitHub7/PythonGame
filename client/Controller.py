@@ -61,6 +61,7 @@ class Controller():
                     if self.player.joinToRoom(room[1]):
                         self.routeGame({'action': 'startGame'})
                         self.main.game.color = 2
+                        self.main.next_page()
                     else:
                         self.main.info_label.setText("Nie można wejść do pokoju")
                     break

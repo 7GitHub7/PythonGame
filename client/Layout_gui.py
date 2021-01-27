@@ -193,7 +193,7 @@ class Main(QWidget):
         self.btn_get_rooms = QPushButton('Odśwież listę pokoi')
         self.selected_room_input = QLineEdit()
         self.btn_enter_room = QPushButton('Wejdź do pokoju')
-        self.btn_enter_room.clicked.connect(self.next_page)
+        self.btn_enter_room.clicked.connect(lambda: self.controller.enterToRoom)
         self.info_label = QLabel()
         self.info_label.setStyleSheet("font: 15pt Century Gothic; color: red")
         self.layout_main.addWidget(QLabel("Stwórz nowy pokój", self))
