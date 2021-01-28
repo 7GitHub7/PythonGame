@@ -72,7 +72,8 @@ class Main(QWidget):
 
     def closeEvent(self, event):
         if self.controller:
-            self.controller.player.endGame("quit")
+            if self.controller.player.roomID:
+                self.controller.player.endGame("quit")
             self.controller.player.disconnect()
 
     def initUI(self):
@@ -101,7 +102,7 @@ class Main(QWidget):
         if new_index < len(self.stacked_widget):
             self.stacked_widget.setCurrentIndex(new_index)
         if self.mouse_clik_counter == 0:
-            self.resize(600, 650)
+            self.resize(650, 650)
             self.update()
             self.mouse_clik_counter += 1
             self.controller = Controller(self)
@@ -110,14 +111,14 @@ class Main(QWidget):
 
         elif self.mouse_clik_counter == 1:
             self.game.show()
-            self.resize(1100, 750)
+            self.setFixedSize(1100, 750)
             self.update()
 
     def back_page(self):
         self.controller.player.roomID = None
         self.game.board = np.zeros((6, 7))
         self.game.hide()
-        self.resize(600, 650)
+        self.setFixedSize(650, 650)
         self.stacked_widget.setCurrentIndex(1)
         self.btn_add_room.setDisabled(False)
         self.btn_enter_room.setDisabled(False)
